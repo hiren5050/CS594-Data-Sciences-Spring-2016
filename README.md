@@ -3,3 +3,5 @@
 CS-594 (Data Sciences)
   Hiren Patel 
   Priyank Patel
+  Kunal Jangade
+  
