@@ -1,32 +1,41 @@
 package edu.csula.datascience.aquisition;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class deathSource {
+import com.mongodb.BasicDBObject;
+
+public class deathSource extends mongoDB implements Source<String> {
 
 	private static final int BUFFER_SIZE = 4096;
 
-	public static void main(String args[]) {
-		try {
-			download();
-		} catch (Exception E) {
-			System.out.println("error");
-		}
+	public boolean hasNext1() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
-	public static void download() throws IOException {
-		URL url = new URL(
-				"https://kaggle2.blob.core.windows.net/datasets/28/32/DeathRecords.zip?sv=2012-02-12&se=2016-04-24T22%3A59%3A33Z&sr=b&sp=r&sig=0MJiLWzfuwHCNHaRPZN4imtJwYVL%2FSGzAVGt7eVVcdU%3D");
+	public Collection<String> next1() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* Download Resources From Kaggle */
+	public void downloadDeathRecords(String path) throws IOException {
+		URL url = new URL(path);
+
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
 		// Check for errors
@@ -52,10 +61,97 @@ public class deathSource {
 
 		output.close();
 		inputStream.close();
-		String zipFilePath = "C:\\cs594\\workspace\\data_science\\Source.zip";
-		String destDirectory = "C:/cs594/workspace/data_science/source";
+		String zipFilePath = "C:\\Users\\Public.DESKTOP-I3193S1\\git\\CS594-Data-Sciences-Spring-2016\\dataScience\\Source.zip";
+		String destDirectory = "C:\\Users\\Public.DESKTOP-I3193S1\\git\\CS594-Data-Sciences-Spring-2016\\dataScience\\Source";
 
 		unzip(zipFilePath, destDirectory);
+		String csvFile = "C:\\Users\\Public.DESKTOP-I3193S1\\git\\CS594-Data-Sciences-Spring-2016\\dataScience\\Source\\DeathRecords.csv";
+		BufferedReader br = null;
+		String line1 = "";
+		String cvsSplitBy = ",";
+
+		try {
+
+			br = new BufferedReader(new FileReader(csvFile));
+			while ((line1 = br.readLine()) != null) {
+
+				BasicDBObject document = new BasicDBObject();
+				// use comma as separator
+				String[] Agetype = line1.split(cvsSplitBy);
+
+				document.put("Month of Date", Agetype[7]);
+				document.put("Sex ", Agetype[8]);
+				document.put("Age", Agetype[10]);
+				document.put("Place of Death", Agetype[14]);
+				document.put("Maratile Status", Agetype[15]);
+				document.put("Year", Agetype[17]);
+				document.put("Mannar of Death", Agetype[19]);
+
+				collection.insert(document);
+				System.out.println("Agetype [MonthofDate= " + Agetype[7] + " , Sex=" + Agetype[8] + ", Age ="
+						+ Agetype[10] + ",PlaceofDeath= " + Agetype[14] + ", Maratile Status = " + Agetype[15]
+						+ ",year = " + Agetype[17] + ", Mannar of Death = " + Agetype[19] + "] ");
+
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		System.out.println("Done");
+	}
+
+	/* Download Resources From www.data.gov And Github User Content */
+	public void downloadDeathRecords(String path1, String path2, String path3) throws IOException {
+		URL url1 = new URL(path1);
+		URL url2 = new URL(path2);
+		URL url3 = new URL(path3);
+
+		HttpURLConnection con1 = (HttpURLConnection) url1.openConnection();
+		HttpURLConnection con2 = (HttpURLConnection) url2.openConnection();
+		HttpURLConnection con3 = (HttpURLConnection) url3.openConnection();
+
+		// Check for errors
+		int responseCode1 = con1.getResponseCode();
+		int responseCode2 = con2.getResponseCode();
+		int responseCode3 = con3.getResponseCode();
+		InputStream inputStream;
+		if (responseCode1 == HttpURLConnection.HTTP_OK && responseCode2 == HttpURLConnection.HTTP_OK
+				&& responseCode3 == HttpURLConnection.HTTP_OK) {
+			System.out.println("OK");
+			inputStream = con1.getInputStream();
+			inputStream = con2.getInputStream();
+			inputStream = con3.getInputStream();
+
+		} else {
+			inputStream = con1.getErrorStream();
+			inputStream = con2.getErrorStream();
+			inputStream = con3.getErrorStream();
+		}
+
+		OutputStream output = new FileOutputStream("death.csv");
+		// Process the response
+		BufferedReader reader;
+		String line = null;
+
+		byte[] buffer = new byte[8 * 1024]; // Or whatever
+		int bytesRead;
+		while ((bytesRead = inputStream.read(buffer)) > 0) {
+			output.write(buffer, 0, bytesRead);
+		}
+
+		output.close();
+		inputStream.close();
 
 	}
 
@@ -91,6 +187,21 @@ public class deathSource {
 			bos.write(bytesIn, 0, read);
 		}
 		bos.close();
+	}
+
+	public boolean hasNext() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public Collection<String> next() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void downloadDeathRecords() {
+		// TODO Auto-generated method stub
+
 	}
 
 }
